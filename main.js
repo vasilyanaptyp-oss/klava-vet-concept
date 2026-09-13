@@ -52,6 +52,7 @@
     var esc = function (s) { return s.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); };
     var first = true;
 
+    /* Teksts nāk tikai no šī faila konstantēm, ne no lietotāja ievades. */
     var apply = function () {
       var sit = SIT[val('sit')], pet = val('pet'), vieta = val('vieta');
       var body = (sit ? sit.sms : 'Vēlos vienoties par veterinārārstes vizīti mājās') +
@@ -85,17 +86,11 @@
 
   /* ---------- 2. Atklāšana slinkšot: bez IntersectionObserver, ar apdrošinājumu ---------- */
   var rv = Array.prototype.slice.call(document.querySelectorAll('.rv'));
-  var steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
   var check = function () {
     var vh = window.innerHeight;
-    var i, el;
-    for (i = 0; i < rv.length; i++) {
-      el = rv[i];
+    for (var i = 0; i < rv.length; i++) {
+      var el = rv[i];
       if (!el.classList.contains('in') && el.getBoundingClientRect().top < vh) el.classList.add('in');
-    }
-    for (i = 0; i < steps.length; i++) {
-      el = steps[i];
-      if (!el.classList.contains('lit') && el.getBoundingClientRect().top < vh * 0.9) el.classList.add('lit');
     }
   };
   window.addEventListener('scroll', check, { passive: true });
@@ -103,31 +98,4 @@
   window.addEventListener('load', check);
   check();
   setTimeout(check, 1200);
-
-  /* ---------- 3. Ceļš „Kā notiek vizīte”: zīmējas pēc slinkšanas ---------- */
-  var sp = document.getElementById('sp');
-  var list = document.getElementById('steps');
-  if (sp && list && !reduce) {
-    var cur = 0, target = 0, raf = 0;
-    var tick = function () {
-      cur += (target - cur) * 0.18;
-      if (Math.abs(target - cur) < 0.002) cur = target;
-      sp.style.strokeDashoffset = String(1 - cur);
-      raf = Math.abs(target - cur) > 0 ? window.requestAnimationFrame(tick) : 0;
-    };
-    var measure = function () {
-      var r = list.getBoundingClientRect();
-      var p = (window.innerHeight * 0.78 - r.top) / r.height;
-      target = p < 0 ? 0 : p > 1 ? 1 : p;
-      for (var i = 0; i < steps.length; i++) {
-        if (target >= (i + 0.35) / steps.length) steps[i].classList.add('lit');
-      }
-      if (!raf) raf = window.requestAnimationFrame(tick);
-    };
-    window.addEventListener('scroll', measure, { passive: true });
-    window.addEventListener('resize', measure);
-    measure();
-  } else if (sp) {
-    sp.style.strokeDashoffset = '0';
-  }
 })();
