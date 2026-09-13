@@ -98,4 +98,47 @@
   window.addEventListener('load', check);
   check();
   setTimeout(check, 1200);
+
+  /* ---------- 3. Citāts iedegas pa vārdiem, aktīvais solis tumšs ---------- */
+  var statement = document.getElementById('statement');
+  var words = [];
+  if (statement && !reduce) {
+    var parts = statement.textContent.split(' ');
+    statement.textContent = '';
+    parts.forEach(function (w, i) {
+      var s = document.createElement('span');
+      s.textContent = w;
+      statement.appendChild(s);
+      if (i < parts.length - 1) statement.appendChild(document.createTextNode(' '));
+      words.push(s);
+    });
+  }
+  var stepsAll = Array.prototype.slice.call(document.querySelectorAll('.step'));
+  var focusTick = function () {
+    var vh = window.innerHeight;
+    if (words.length) {
+      var r = statement.getBoundingClientRect();
+      var p = (vh * 0.85 - r.top) / (r.height + vh * 0.35);
+      p = p < 0 ? 0 : p > 1 ? 1 : p;
+      var n = Math.round(p * words.length);
+      for (var i = 0; i < words.length; i++) words[i].classList.toggle('lit', i < n);
+    }
+    if (stepsAll.length && !reduce) {
+      var best = -1, bestD = Infinity, mid = vh * 0.45;
+      for (var k = 0; k < stepsAll.length; k++) {
+        var sr = stepsAll[k].getBoundingClientRect();
+        var d = Math.abs((sr.top + sr.bottom) / 2 - mid);
+        if (d < bestD) { bestD = d; best = k; }
+      }
+      for (var m = 0; m < stepsAll.length; m++) stepsAll[m].classList.toggle('active', m === best && bestD < vh * 0.5);
+    }
+  };
+  if (reduce) {
+    stepsAll.forEach(function (s) { s.classList.add('active'); });
+  } else {
+    window.addEventListener('scroll', focusTick, { passive: true });
+    window.addEventListener('resize', focusTick);
+    window.addEventListener('load', focusTick);
+    focusTick();
+  }
 })();
